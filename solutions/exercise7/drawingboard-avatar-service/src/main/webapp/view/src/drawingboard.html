@@ -27,7 +27,15 @@
             };
         </script>
 -->
-       
+        <script data-model="local" data-instance="dc">
+            var Dc = function() {
+                this.getColor = function(){
+                    if (navigator.appVersion.indexOf("Chrome") > 0) return ["RED"];
+                    return ["GREEN"];
+                };
+            };
+        </script>
+
         <script data-model="rest" id="DrawingModel">
             var DrawingModel = function() {
                 this.key = "key1";
@@ -219,7 +227,7 @@
                     <option value="BIG_SQUARE">Big Square</option>
                     <option value="SMALL_SQUARE">Small Square</option>
                 </select>
-                <select id="shapeColor" >
+                <select id="shapeColor" data-value="#{dc.getColor()}">
                     <option value="RED">Red</option>
                     <option value="GREEN">Green</option>
                     <option value="BLUE">Blue</option>
