@@ -1,16 +1,14 @@
 var avatar = require("org/glassfish/avatar");
-var common = require("org/glassfish/avatar/common");
-var appstate = common.application.state;
+var appstate = avatar.application.state;
+var bus = avatar.application.bus;
 
-
+var pushContexts = [];
 appstate.put("drawings", []);
 appstate.put("lastId", 1);
-appstate.put("pushContexts", []);
-print("app initialized at index: " + common.application.threadIndex);
 
 avatar.registerPushService({url: "api/events"}, function() {
     this.onOpen = function(context) {
-        appstate.get("pushContexts").push(context);
+        pushContexts.push(context);
     };
     this.onClose = function(context) {
         var pushContexts = appstate.get("pushContexts");
@@ -18,7 +16,6 @@ avatar.registerPushService({url: "api/events"}, function() {
         pushContexts.splice(pos, 1);
     };
 });
-
 
 avatar.registerRestService({url: "api/drawings/{id}"},
 function() {
@@ -28,9 +25,10 @@ function() {
     this.onDelete = function(request, response) {
         var drawings = appstate.get("drawings");
         var drawing = getDrawing(this.id);
-        print("DELETE: " + JSON.stringify(drawing) + " ThreadIndex: " + common.application.threadIndex);
+        print("DELETE: " + JSON.stringify(drawing) + " ThreadIndex: " + avatar.application.threadIndex);
         drawings.splice(drawings.indexOf(drawing), 1);
-        appstate.emit('updated');
+        appstate.put("drawings", drawings);
+        bus.publish('updated', drawing);
         return response.send(null);
     };
 });
@@ -38,16 +36,17 @@ function() {
 avatar.registerRestService({url: "api/drawings/"},
 function() {
     this.onGet = function(request, response) {
-        print("serving get drawings at index: " + common.application.threadIndex);
+        print("serving get drawings at index: " + avatar.application.threadIndex);
         return response.send(appstate.get("drawings"));
     };
     this.onPost = function(request, response) {
         var drawings = appstate.get("drawings");
         var drawing = {id: appstate.get("lastId"), name: request.data.name, shapes: []};
-        print("POST: " + JSON.stringify(drawing) + " ThreadIndex: " + common.application.threadIndex);
+        print("POST: " + JSON.stringify(drawing) + " ThreadIndex: " + avatar.application.threadIndex);
         drawings.push(drawing);
+        appstate.put("drawings", drawings);
         appstate.put("lastId", drawing.id + 1);
-        appstate.emit('updated');
+        bus.publish('updated', drawing);
         return response.send(drawing.id);
     };
 });
@@ -67,15 +66,16 @@ avatar.registerSocketService({url: "websockets/{id}"}, function() {
     };
 });
 
-appstate.on('updated', function() {
+bus.on('updated', function(body, message) {
+    print("drawings update received at ThreadIndex: " + avatar.application.threadIndex
+            + " for drawing " + JSON.stringify(body));
     pushAll();
 });
 
 function pushAll() {
-    for (var i in appstate.get("pushContexts")) {
-        appstate.get("pushContexts")[i].sendMessage({
-                msg: "collection changed, conn: " + i});
-        };
+    for (var i in pushContexts) {
+        pushContexts[i].sendMessage({msg: "collection changed"});
+    };
 };
 
 
