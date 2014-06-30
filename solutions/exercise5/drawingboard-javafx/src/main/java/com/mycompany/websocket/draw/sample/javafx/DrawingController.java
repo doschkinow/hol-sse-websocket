@@ -33,6 +33,8 @@ import netscape.javascript.JSObject;
  * @author pdos
  */
 public class DrawingController implements Initializable {
+    private static String rootCtx = System.getProperty("rootCtx");
+    private static String eventsCtx = System.getProperty("eventsCtx");
 
     @FXML
     private WebView webview;
@@ -49,7 +51,7 @@ public class DrawingController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         engine = webview.getEngine();
         setupEngine();
-        engine.load("http://localhost:8080/drawingboard/");
+        engine.load(rootCtx + "index.html");
 
     }
 
@@ -74,7 +76,7 @@ public class DrawingController implements Initializable {
     private void initSSE() {
         Client client = ClientBuilder.newClient();
         // create a web target pointing to the drawings resource
-        WebTarget t = client.target("http://localhost:8080/drawingboard/api/drawings");
+        WebTarget t = client.target(rootCtx + eventsCtx);
         // start listening to SSE
         eventSource = new DrawingsEventSource(t.path("events"), engine);
     }
