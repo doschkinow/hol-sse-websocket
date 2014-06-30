@@ -5,7 +5,7 @@ import java.util.Set;
 import javax.ws.rs.ApplicationPath;
 import org.glassfish.jersey.media.sse.SseFeature;
 import org.glassfish.jersey.moxy.json.MoxyJsonFeature;
-import org.glassfish.jersey.server.ResourceConfig;
+
 
 @ApplicationPath("api")
 public class JaxrsApplication extends javax.ws.rs.core.Application {
