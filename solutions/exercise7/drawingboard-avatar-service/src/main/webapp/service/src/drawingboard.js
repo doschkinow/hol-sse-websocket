@@ -11,7 +11,6 @@ avatar.registerPushService({url: "api/events"}, function() {
         pushContexts.push(context);
     };
     this.onClose = function(context) {
-        var pushContexts = appstate.get("pushContexts");
         var pos = pushContexts.indexOf(context);
         pushContexts.splice(pos, 1);
     };
@@ -20,7 +19,8 @@ avatar.registerPushService({url: "api/events"}, function() {
 avatar.registerRestService({url: "api/drawings/{id}"},
 function() {
     this.onGet = function(request, response) {
-        return response.send({});
+        var drawing = getDrawing(this.id);
+        return response.send(drawing);
     };
     this.onDelete = function(request, response) {
         var drawings = appstate.get("drawings");
@@ -33,7 +33,7 @@ function() {
     };
 });
 
-avatar.registerRestService({url: "api/drawings/"},
+avatar.registerRestService({url: "api/drawings"},
 function() {
     this.onGet = function(request, response) {
         print("serving get drawings at index: " + avatar.application.threadIndex);
