@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+    <head>  
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Drawing Board</title>
+        <link rel="stylesheet" href="css/bootstrap.min.css"/>
+        <link href="css/bootstrap-responsive.min.css" rel="stylesheet">
+        <style type="text/css">
+            body {
+                padding-top: 60px;
+                padding-bottom: 40px;
+            }
+
+            .table td {
+                vertical-align: middle;
+            }
+        </style>
+    </head>
+
+    <body>
+<!--       
+        <script>
+            window.remove = function(id) {
+                drawingModel.key = id;
+                drawingModel.delete(true);
+            };
+        </script>
+-->
+        <script data-model="local" data-instance="dc">
+            var Dc = function() {
+                this.getColor = function(){
+                    if (navigator.appVersion.indexOf("Chrome") > 0) return ["RED"];
+                    return ["GREEN"];
+                };
+            };
+        </script>
+
+        <script data-model="rest" id="DrawingModel">
+            var DrawingModel = function() {
+                this.key = "key1";
+            };
+        </script>
+        
+        <script data-model="rest" id="DrawingCollectionModel">
+            var DrawingCollectionModel = function() {
+                this.name = "";
+                // not able to achieve the following otherwise
+                this.cssHack = function() {
+                    $("div").css("width", "auto");
+                    for (var i = 0; i < document.styleSheets.length; i++) {
+                        if (document.styleSheets[i].href.search(/css\/avatar/) > -1) {
+                            document.styleSheets[i].disabled = true;
+                        }
+                    }
+                };
+                this.getJQcall = function(id){
+                    jqc = "jQuery.ajax({type:'DELETE', url:'" + this.getUrl() + "/" + id + "'})";
+                    return jqc;
+                };
+                this.getDeleteButton = function(id){
+                    gdb = "<button class='btn-small' onclick=\"" + this.getJQcall(id) + "\"><i class='icon-remove'></i></button>";
+                    //gdb = "<button class='btn-small' onclick=\"window.remove(" + id + ")\"><i class='icon-remove'></i></button>";
+                    return gdb;
+                };
+                this.displayItems = function() {
+                    this.cssHack();
+                    if (typeof this.items == 'undefined') {
+                        return "";
+                    }
+                    var result = "<table class='table table-striped'>";
+                    for (var i in this.items) {
+                        var item = this.items[i];
+                        var row = "<tr>" +
+                                "<td>" + item.id + "</td>" +
+                                "<td width='100%'><a href=#singledrawing?id=" +
+                                item.id + ">" + item.name + "</a></td>" +
+                                "<td>" + this.getDeleteButton(item.id) + "</td>" +
+                                "</tr>";
+                        result += row;
+                    }
+                    return result + "</table>";
+                };
+                this.getName = function(id){
+                    for (i in this.items){
+                        if (this.items[i].id == id) return this.items[i].name;
+                    }
+                };
+                this.create = function (){
+                    this.post();
+                    this.name = "";
+                };
+           };
+        </script>
+        <script data-model="push" >
+            var DrawingPushModel = function(drawingCollection) {
+                this.msg = '';
+                var superOnMessage = this.onMessage;
+                this.onMessage = function(event) {
+                    superOnMessage.apply(this, [event]);     // default behavior
+                    drawingCollection.get();
+                };
+            };
+        </script>
+        <script data-model="socket">
+            var DrawingWebsocketModel = function() {
+                this.clear = function() {
+                    var canvas = document.getElementById('drawing');
+                    var context = canvas.getContext('2d');
+                    context.clearRect(0, 0, canvas.width, canvas.height);
+                };
+                this.mouseMove = function(event) {
+                    if (event.shiftKey) {
+                        this.mouseDown(event);
+                    }
+                };
+                this.mouseDown = function(e) {
+                    var totalOffsetX = 0;
+                    var totalOffsetY = 0;
+                    var currentElement = document.getElementById('drawing');
+
+                    do {
+                        totalOffsetX += currentElement.offsetLeft;
+                        totalOffsetY += currentElement.offsetTop;
+                    } while (currentElement = currentElement.offsetParent);
+
+
+                    var posx = e.pageX - totalOffsetX;
+                    var posy = e.pageY - totalOffsetY;
+
+                    var msg = '{"x" : ' + posx +
+                            ', "y" : ' + posy +
+                            ', "color" : "' + document.getElementById('shapeColor').value +
+                            '", "type" : "' + document.getElementById('shapeType').value + '"}';
+
+                    this.send(msg);
+                };
+                this.drawShape = function(shape) {
+                    var context = document.getElementById('drawing').getContext('2d');
+                    var radius = 8;
+                    context.fillStyle = shape.color;
+                    if (shape.type == 'SMALL_CIRCLE') {
+                        context.beginPath();
+                        context.arc(shape.x, shape.y, radius, 0, Math.PI * 2, true);
+                        context.closePath();
+                        context.fill();
+                    } else if (shape.type == 'BIG_CIRCLE') {
+                        context.beginPath();
+                        context.arc(shape.x, shape.y, 2 * radius, 0, Math.PI * 2, true);
+                        context.closePath();
+                        context.fill();
+                    } else if (shape.type == 'BIG_SQUARE') {
+                        //context.fillRect(0,1,10,10);
+                        context.fillRect((shape.x - (2 * radius)), (shape.y - (2 * radius)), (4 * radius), (4 * radius));
+                        //context.fill();
+                    } else if (shape.type == 'SMALL_SQUARE') {
+                        context.fillRect((shape.x - (radius)), (shape.y - (radius)), (2 * radius), (2 * radius));
+                    }
+                };
+                var superOnMessage = this.onMessage;
+                this.onMessage = function(event) {
+                    superOnMessage.apply(this, [event]);     // default behavior
+                    this.drawShape(eval("(" + event + ")"));
+                };
+
+            };
+        </script>
+        <script data-controller="uiController" data-instance="sdc">
+            var Sdc = function() {
+                this.onShow = function() {
+                    dws.clear();
+                    dws._metadata().socket = null;
+                    dws.activate();
+                };
+                this.onHide = function() {
+                    dws.deactivate();
+                };
+            }
+        </script>
+        <script data-controller="uiController" data-instance="lc">
+            var Lc = function() {
+                this.onHide = function() {
+                    dp.deactivate();
+                };
+            }
+        </script>
+        <script data-type="DrawingModel" data-instance="drawingModel" 
+            data-url="api/drawings/#{this.key}" ></script>
+
+        <div data-widget="view" id="drawingboard_avatar" data-title="DrawingList" data-main="true" data-controller="lc">
+            
+            <script data-type="DrawingCollectionModel" data-instance="drawingCollection" 
+                data-url="api/drawings/" data-props="itemCollection:true"></script>
+            <script data-type="DrawingPushModel" data-instance="dp" 
+                    data-props="dependsOn:'drawingCollection'" data-url="api/events"></script>
+
+            <div class="hero-unit">
+                <h1>Drawing Board</h1>
+                <p>
+                    Live group drawing.
+                </p>
+            </div>
+            <div class="span12">
+                <form>
+                    Drawing Name: <input style="margin-bottom: 2px" type="text" data-value = "#{drawingCollection.name}">
+                    <button class="btn" style="margin-bottom: 2px" onclick="#{drawingCollection.create()}"><i class="icon-plus"></i>New</button>
+                </form>
+                #{drawingCollection.displayItems()}
+            </div> 
+        </div>
+
+        <div data-widget="view" id="singledrawing" data-title="SingleDrawing" data-main="false" data-controller="sdc">
+            <script data-type="DrawingWebsocketModel" data-instance="dws" 
+            data-url="websockets/#{location.params.id}"></script>
+            <div class="hero-unit">
+                <h1>Drawing Board</h1>
+                <p>
+                    Live group drawing.
+                </p>
+            </div>
+            <h2>Drawing #{drawingCollection.getName(location.params.id)}</h2>
+            <p>Click to draw below (use SHIFT key too) <p>
+            <form class="form-horizontal">
+                <select id="shapeType" >
+                    <option value="BIG_CIRCLE">Big Circle</option>
+                    <option value="SMALL_CIRCLE">Small Circle</option>
+                    <option value="BIG_SQUARE">Big Square</option>
+                    <option value="SMALL_SQUARE">Small Square</option>
+                </select>
+                <select id="shapeColor" data-value="#{dc.getColor()}">
+                    <option value="RED">Red</option>
+                    <option value="GREEN">Green</option>
+                    <option value="BLUE">Blue</option>
+                    <option value="YELLOW">Yellow</option>
+                </select>
+            </form>
+
+            <table>
+                <tbody>
+                    <tr>
+                        <td>
+                            <canvas style="border-width: 1px; border-color: gray; border-style: dashed;"
+                                    id="drawing" width="500" height="350" 
+                                    onmousemove="#{dws.mouseMove(event)}" onmousedown="#{dws.mouseDown(event)}"></canvas>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <a class="btn" href="#drawingboard_avatar" >Back</a>
+        </div>
+
+    </body>
+</html>
