@@ -1,0 +1,16 @@
+1. Install WebLogic Server 12.1.3 according to http://docs.oracle.com/middleware/1213/core/WLSIG/install_gui.htm#i1082009 (use JDK7). Install Netbeans 8 (use JDK8).
+2. Create a domain. Use template drawingboardmultitier_wlstemplate1213.jar. This template prepopulates needed shared library for SSE and JAX-RS 2.0 and creates separate storage- enabled cache tier and storage-disabled app tier. The root pom file asumes a weblogic user with password welcome1.  Admin listen address and port is assumed localhost and 7001
+3. Goto $DOMAIN_HOME/bin. Start nodemanager and admin server. From the console start all three managed servers.
+4. Goto $ORACLE_HOME/oracle_common/plugins/maven/com/oracle/maven/oracle-maven-sync/12.1.3. Run
+	mvn install:install-file -DpomFile=oracle-maven-sync.12.1.3.pom -Dfile=oracle-maven-sync.12.1.3.jar
+	mvn com.oracle.maven:oracle-maven-sync:push -Doracle-maven-sync.oracleHome=$ORACLE_HOME -DtestingOnly=false
+5. Start Netbeans 8.0. Open Project demojug2014 (use root pom.xml).
+6. Use JDK 7 for war, gar, ear sub projects. For drawingboard-javafx use JDK 8.
+7. mvn verify on root pom.xml. This deploys compiles, packages, and deploys the application.
+8. Open drawingboard-javafx project. Open DrawingController.java. Change static HOST to your setting (yourserveraddress).
+8. Start browser that supports websocket  (e.g. Firefox 17.0.7). Use http://yourserveraddress:7003/drawingboard/ 
+9. Start JavaFXDrawing.java. 
+
+Now create a drawing. You should be able to see changes you do in deifferent client even connected to different managed servers!
+
+

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+        <action>
+            <actionName>CUSTOM-package</actionName>
+            <displayName>package</displayName>
+            <goals>
+                <goal>clean</goal>
+                <goal>package</goal>
+            </goals>
+        </action>
+        <action>
+            <actionName>CUSTOM-clean</actionName>
+            <displayName>clean</displayName>
+            <goals>
+                <goal>clean</goal>
+            </goals>
+        </action>
+        <action>
+            <actionName>CUSTOM-deploy</actionName>
+            <displayName>deploy</displayName>
+            <goals>
+                <goal>verify</goal>
+            </goals>
+        </action>
+    </actions>

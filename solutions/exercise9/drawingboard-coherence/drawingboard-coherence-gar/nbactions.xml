@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+        <action>
+            <actionName>CUSTOM-Test</actionName>
+            <displayName>Test</displayName>
+            <goals>
+                <goal>test</goal>
+            </goals>
+        </action>
+        <action>
+            <actionName>CUSTOM-test</actionName>
+            <displayName>test</displayName>
+            <goals>
+                <goal>clean</goal>
+                <goal>test</goal>
+            </goals>
+        </action>
+        <action>
+            <actionName>CUSTOM-test-compile</actionName>
+            <displayName>test-compile</displayName>
+            <goals>
+                <goal>test-compile</goal>
+            </goals>
+        </action>
+    </actions>
