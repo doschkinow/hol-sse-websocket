@@ -30,20 +30,7 @@ class DataProvider {
 
     public static String DRAWINGS_CACHE_NAME = "drawings-cache";
     public static String ID_CACHE_NAME  = "id-cache";
-
-    private static boolean LISTENER_INITIALIZED = false;
-
-    /**
-     * ID of the last created drawing.
-     */
-    //private static int lastId = 0;
-
-    /**
-     * Map that stores drawings by ID.
-     */
-//    private static final HashMap<Integer, Drawing> drawings
-//            = new HashMap<>();
-
+    
     /**
      * Broadcaster for server-sent events.
      */
@@ -62,12 +49,8 @@ class DataProvider {
      * @return Drawing with the corresponding ID.
      */
     static synchronized Drawing getDrawing(int drawingId) {
-        
         NamedCache drawingsCache = CacheFactory.getCache(DRAWINGS_CACHE_NAME);
         return (Drawing) drawingsCache.get(drawingId);
-//        return drawings.get(drawingId);
-        
-        
     }
 
     /**
@@ -76,24 +59,9 @@ class DataProvider {
      * @return List of all drawings.
      */
     static synchronized List<Drawing> getAllDrawings() {
-        
         NamedCache drawingsCache = CacheFactory.getCache(DRAWINGS_CACHE_NAME);
-        
-        /* 
-         * When the first drawing is created we initialize Map Listeners on  DRAWINGS_CACHE_NAME
-         */
-        if (!LISTENER_INITIALIZED) {
-            drawingsCache.addMapListener(new DrawingsCacheEventListener());
-
-            LISTENER_INITIALIZED = true;
-            
-            System.out.println("DataProvider:getAllDrawings() Listener initialized");
-            
-        }
-        
         List<Drawing> list = new ArrayList(drawingsCache.values());
         Collections.sort(list);
-        
         return list;
     }
 
@@ -105,34 +73,15 @@ class DataProvider {
      * @return ID of the newly created drawing.
      */
     static synchronized int createDrawing(Drawing drawing) {
-        
         NamedCache idCache = CacheFactory.getCache(ID_CACHE_NAME);
-        
-//        int lastId = (Integer) idCache.get(-1); 
-//        System.out.println("DataProvider:createDrawing lastId :" +  lastId);
-        
-//        lastId = lastId + 1;
-//        idCache.put(-1, new Integer(lastId));
-//        
-//        System.out.println("DataProvider:createDrawing lastId after update:" +  lastId);
-        
         Integer lastIdInteger = (Integer) idCache.invoke(-1, new IDIncrementorProcessor());
         
         Drawing result = new Drawing();
         result.setId(lastIdInteger);
         result.setName(drawing.getName());
-        result.setShapes(drawing.getShapes());
         
         NamedCache drawingsCache = CacheFactory.getCache(DRAWINGS_CACHE_NAME);
         drawingsCache.put(result.getId(), result);
-
-//        drawings.put(result.getId(), result);
-//        
-//        sseBroadcaster.broadcast(new OutboundEvent.Builder()
-//                .name("create")
-//                .data(Drawing.class, result)
-//                .mediaType(MediaType.APPLICATION_JSON_TYPE)
-//                .build());
         return result.getId();
     }
 
@@ -147,8 +96,6 @@ class DataProvider {
         
         NamedCache drawingsCache = CacheFactory.getCache(DRAWINGS_CACHE_NAME);
         return drawingsCache.remove(drawingId) != null;
-        
-//        return drawings.remove(drawingId) != null;
     }
 
     /**
@@ -162,16 +109,10 @@ class DataProvider {
     static synchronized boolean addShape(int drawingId, Shape shape) {
         Drawing drawing = getDrawing(drawingId);
         if (drawing != null) {
-//            if (drawing.getShapes() == null) {
-//                drawing.setShapes(new ArrayList<Shape>());
-//            }
             drawing.getShapes().add(shape); //TODO ??? 
-            
             // Cache update
             NamedCache drawingsCache = CacheFactory.getCache(DRAWINGS_CACHE_NAME);
             drawingsCache.put(drawingId, drawing);
-            
-//            wsBroadcast(drawingId, shape);
             return true;
         } else {
             return false;
@@ -186,9 +127,6 @@ class DataProvider {
      */
     static void addEventOutput(EventOutput eo) {
         sseBroadcaster.add(eo);
-        
-        System.out.println("DataProvider:addEventOutput SSE");
-        
     }
 
     /**
@@ -255,41 +193,25 @@ class DataProvider {
     public static class DrawingsCacheEventListener extends AbstractMapListener {
 
         public void entryInserted(MapEvent event) {
-
             sseBroadcaster.broadcast(new OutboundEvent.Builder()
                     .name("create")
                     .data(Drawing.class, event.getNewValue())
                     .mediaType(MediaType.APPLICATION_JSON_TYPE)
                     .build());
-
-            System.out.println(event);
         }
 
         public void entryUpdated(MapEvent event) {
-            
             Drawing drawing = (Drawing) event.getNewValue();
             List<Shape> shapes = drawing.getShapes();
-            
-            
-            System.out.println("DrawingsCacheEventListener:entryUpdated   DrawingID:" + drawing.getId() + " Shapes.size():" + shapes .size()  );
-            
             Shape shape = shapes.get(shapes.size() - 1);
-            
             wsBroadcast(drawing.getId(), shape);
-           
-            System.out.println(event);
         }
 
         public void entryDeleted(MapEvent event) {
-            
             sseBroadcaster.broadcast(new OutboundEvent.Builder()
                 .name("delete")
                 .data(String.class, String.valueOf(((Drawing)event.getOldValue()).getId()))
                 .build());
-            
-            System.out.println(event);
         }
-
     }
-
 }

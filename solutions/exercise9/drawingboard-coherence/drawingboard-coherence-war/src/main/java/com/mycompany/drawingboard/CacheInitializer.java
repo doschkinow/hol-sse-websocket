@@ -6,6 +6,7 @@
 
 package com.mycompany.drawingboard;
 
+import static com.mycompany.drawingboard.DataProvider.DRAWINGS_CACHE_NAME;
 import static com.mycompany.drawingboard.DataProvider.ID_CACHE_NAME;
 import com.tangosol.net.CacheFactory;
 import com.tangosol.net.NamedCache; 
@@ -23,15 +24,11 @@ import javax.ejb.Startup;
 @Singleton
 @Startup
 public class CacheInitializer {
-
     @PostConstruct
-    void initialiseID() {
-        NamedCache drawingsCache = CacheFactory.getCache(ID_CACHE_NAME);
-            
-        //drawingsCache.put(-1, new Integer(0));
-        // conditional put
-        drawingsCache.invoke(-1, new ConditionalPut(new NotFilter(PresentFilter.INSTANCE), new Integer(0)));
+    void initialize() {
+        NamedCache idCache = CacheFactory.getCache(ID_CACHE_NAME);
+        idCache.invoke(-1, new ConditionalPut(new NotFilter(PresentFilter.INSTANCE), new Integer(0)));
+        NamedCache drawingsCache = CacheFactory.getCache(DRAWINGS_CACHE_NAME);
+        drawingsCache.addMapListener(new DataProvider.DrawingsCacheEventListener());
     }
-    
-    
 }
