@@ -1,0 +1,1 @@
+This application is for demonstartion and educational purposes only. It shows how to share state accross multiple Weblogic server instances in a cluster using Coherence and how to propagate data to Websockets via Coherence events. See howto-use for setup.

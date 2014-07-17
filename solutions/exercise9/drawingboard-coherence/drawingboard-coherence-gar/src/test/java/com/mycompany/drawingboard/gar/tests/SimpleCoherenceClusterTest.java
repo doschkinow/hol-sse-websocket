@@ -11,6 +11,7 @@ import org.junit.Assert;
 
 import com.mycompany.drawingboard.Shape;
 import com.mycompany.drawingboard.Drawing;
+import com.mycompany.drawingboard.processors.AddShapeProcessor;
 
 import com.oracle.tools.junit.AbstractTest;
 import com.oracle.tools.runtime.coherence.Cluster;
@@ -29,6 +30,16 @@ import com.tangosol.run.xml.XmlHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+
+/**
+ * Tests for Coherence GAR project
+ * 
+ * @author mbraeuer
+ * 
+ * These tests use Coherence Coomunity tools
+ * @see https://github.com/coherence-community/oracle-tools
+ * 
+ */
 
 public class SimpleCoherenceClusterTest extends AbstractTest {
 
@@ -54,7 +65,6 @@ public class SimpleCoherenceClusterTest extends AbstractTest {
     public void setupTest() {
 
         createCluster();
-
         try {
             assertThat(invoking(cluster).getClusterSize(), is(CLUSTER_SIZE));
 
@@ -65,7 +75,6 @@ public class SimpleCoherenceClusterTest extends AbstractTest {
         }
 
         clientCacheFactory = createClientCacheFactory(CACHE_CONFIG_FILE);
-        
         cache = clientCacheFactory.ensureCache(CACHE_NAME, null);
         
         warmUpCache();
@@ -73,31 +82,33 @@ public class SimpleCoherenceClusterTest extends AbstractTest {
     }
 
     @Test
-    public void testMe() {
+    public void testAddShapeProcessor() {
 
         try {
-             
-            Assert.assertEquals(cache.size(), 1);
+            Assert.assertEquals(1, cache.size());
             
             Drawing aDrawing = (Drawing) cache.get(10);
-            
             Shape aShape = aDrawing.getShapes().get(0);
-            
-            Assert.assertEquals(aShape.getType(), Shape.ShapeType.BIG_CIRCLE);
+            Assert.assertEquals(Shape.ShapeType.BIG_CIRCLE, aShape.getType());
             
             Shape shape2 = new Shape();
             shape2.setColor(Shape.ShapeColor.RED);
             shape2.setType(Shape.ShapeType.BIG_SQUARE);
             shape2.setX(20);
             shape2.setY(20);
-        
-        
-            aDrawing.getShapes().add(shape2);
+       
+            boolean testB = (Boolean) cache.invoke(aDrawing.getId(), new AddShapeProcessor(shape2));
+            Assert.assertTrue(testB);
             
-            cache.put(aDrawing.getId(), aDrawing);
-
-            return;
-
+            testB = (Boolean) cache.invoke(-1, new AddShapeProcessor(shape2));
+            Assert.assertFalse(testB);
+            
+            aDrawing = (Drawing) cache.get(10);
+            Assert.assertEquals(2, aDrawing.getShapes().size());
+            
+            aShape = (Shape) aDrawing.getShapes().get(1);
+            Assert.assertEquals( Shape.ShapeType.BIG_SQUARE, aShape.getType());
+      
         } catch (Exception e) {
             e.printStackTrace();
             Assert.fail();
@@ -119,7 +130,7 @@ public class SimpleCoherenceClusterTest extends AbstractTest {
         drawing1.setName("Cool Drawing");
         drawing1.setShapes(shapes);
         
-        cache.put(Integer.valueOf(drawing1.getId()), drawing1);
+        cache.put(drawing1.getId(), drawing1);
     }
 
     @After
