@@ -1,1 +1,1 @@
-This application is for demonstartion and educational purposes only. It shows how to share state accross multiple Weblogic server instances in a cluster using Coherence and how to propagate data to Websockets via Coherence events. See howto-use for setup.
+This application is for demonstration and educational purposes only. It shows how to share state accross multiple Oracle Weblogic Server instances in a cluster using Coherence and how to propagate data to Websockets/SSE via Oracle Coherence events. See howto-use for setup.
