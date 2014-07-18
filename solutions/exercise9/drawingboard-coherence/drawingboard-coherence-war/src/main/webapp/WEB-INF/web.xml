@@ -3,4 +3,8 @@
   <session-config>
     <session-timeout>30</session-timeout>
   </session-config>
+  <context-param>
+    <param-name>weblogic.websocket.tyrus.session-max-idle-timeout</param-name>
+    <param-value>180000</param-value> <!-- for demo purposes -->
+  </context-param>
 </web-app>
