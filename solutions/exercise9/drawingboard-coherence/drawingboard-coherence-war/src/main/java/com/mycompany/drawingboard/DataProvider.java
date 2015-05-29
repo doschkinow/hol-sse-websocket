@@ -1,6 +1,6 @@
 package com.mycompany.drawingboard;
 
-import com.mycompany.drawingboard.processors.IDIncrementorProcessor;
+import com.mycompany.drawingboard.processors.AddShapeProcessor;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,10 +18,9 @@ import com.tangosol.net.NamedCache;
 
 import com.tangosol.util.AbstractMapListener;
 import com.tangosol.util.MapEvent;
+import com.tangosol.util.ValueManipulator;
+import com.tangosol.util.processor.NumberIncrementor;
 import java.util.Collections;
-
-
-//TODO: Umbauen auf JCache API
 
 /**
  * Simple in-memory data storage for the application.
@@ -29,8 +28,8 @@ import java.util.Collections;
 class DataProvider {
 
     public static String DRAWINGS_CACHE_NAME = "drawings-cache";
-    public static String ID_CACHE_NAME  = "id-cache";
-    
+    public static String ID_CACHE_NAME = "id-cache";
+
     /**
      * Broadcaster for server-sent events.
      */
@@ -74,12 +73,12 @@ class DataProvider {
      */
     static synchronized int createDrawing(Drawing drawing) {
         NamedCache idCache = CacheFactory.getCache(ID_CACHE_NAME);
-        Integer lastIdInteger = (Integer) idCache.invoke(-1, new IDIncrementorProcessor());
-        
+        Integer lastIdInteger = (Integer) idCache.invoke(-1, new NumberIncrementor((ValueManipulator) null, 1, false));
+
         Drawing result = new Drawing();
         result.setId(lastIdInteger);
         result.setName(drawing.getName());
-        
+
         NamedCache drawingsCache = CacheFactory.getCache(DRAWINGS_CACHE_NAME);
         drawingsCache.put(result.getId(), result);
         return result.getId();
@@ -93,7 +92,7 @@ class DataProvider {
      * was no such drawing.
      */
     static synchronized boolean deleteDrawing(int drawingId) {
-        
+
         NamedCache drawingsCache = CacheFactory.getCache(DRAWINGS_CACHE_NAME);
         return drawingsCache.remove(drawingId) != null;
     }
@@ -107,16 +106,16 @@ class DataProvider {
      * drawing was found.
      */
     static synchronized boolean addShape(int drawingId, Shape shape) {
-        Drawing drawing = getDrawing(drawingId);
-        if (drawing != null) {
-            drawing.getShapes().add(shape); //TODO ??? 
-            // Cache update
-            NamedCache drawingsCache = CacheFactory.getCache(DRAWINGS_CACHE_NAME);
-            drawingsCache.put(drawingId, drawing);
-            return true;
+
+        NamedCache drawingsCache = CacheFactory.getCache(DRAWINGS_CACHE_NAME);
+
+        if (drawingsCache.containsKey(drawingId)) {
+            return (Boolean) drawingsCache.invoke(drawingId, new AddShapeProcessor(shape));
+            
         } else {
             return false;
         }
+
     }
 
     /**
@@ -190,6 +189,9 @@ class DataProvider {
         }
     }
 
+    /**
+     * Cache Event Listener to broadcast shared state to clients 
+     */
     public static class DrawingsCacheEventListener extends AbstractMapListener {
 
         public void entryInserted(MapEvent event) {
@@ -209,9 +211,9 @@ class DataProvider {
 
         public void entryDeleted(MapEvent event) {
             sseBroadcaster.broadcast(new OutboundEvent.Builder()
-                .name("delete")
-                .data(String.class, String.valueOf(((Drawing)event.getOldValue()).getId()))
-                .build());
+                    .name("delete")
+                    .data(String.class, String.valueOf(((Drawing) event.getOldValue()).getId()))
+                    .build());
         }
     }
 }

@@ -23,9 +23,6 @@ public class DrawingWebSocket {
      */
     @OnOpen
     public void onOpen(@PathParam("id") Integer drawingId, Session session) {
-        
-        System.out.println("DrawingWebSocket:onOpen with id " + drawingId);
-        
         DataProvider.addWebSocket(drawingId, session);
     }
 
@@ -51,9 +48,6 @@ public class DrawingWebSocket {
      */
     @OnMessage
     public void shapeCreated(@PathParam("id") Integer drawingId, Shape shape, Session session) {
-        
-        System.out.println("DrawingWebSocket:shapeCreated " + shape + " from Drawing " + drawingId);
-
         DataProvider.addShape(drawingId, shape);
     }
 }

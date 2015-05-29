@@ -17,7 +17,7 @@
 		</user-type>
                 <user-type>
 			<type-id>1003</type-id>
-			<class-name>com.mycompany.drawingboard.processors.IDIncrementorProcessor</class-name>
+			<class-name>com.mycompany.drawingboard.processors.AddShapeProcessor</class-name>
 		</user-type>
 	</user-type-list>
 	<allow-interfaces>true</allow-interfaces>

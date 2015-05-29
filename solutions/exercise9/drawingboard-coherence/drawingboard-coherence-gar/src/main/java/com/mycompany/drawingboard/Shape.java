@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.drawingboard;
 
 import com.tangosol.io.pof.PofReader;
@@ -14,8 +9,6 @@ import java.io.IOException;
  * POJO representing a shape.
  */
 public class Shape implements PortableObject{
-
- 
 
     /**
      * Shape types.
@@ -107,8 +100,4 @@ public class Shape implements PortableObject{
         writer.writeInt(3, this.getY());
     }
     
-    
-    
-    
-    // https://community.oracle.com/thread/2270624?start=0&tstart=0 https://community.oracle.com/thread/2382297?tstart=0
 }

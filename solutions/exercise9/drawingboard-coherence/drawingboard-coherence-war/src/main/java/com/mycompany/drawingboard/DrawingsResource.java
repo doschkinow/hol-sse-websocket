@@ -44,10 +44,7 @@ public class DrawingsResource {
      * @return List of all drawings.
      */
     @GET
-    public List<Drawing> getAll() {
-        
-        System.out.println("DrawingsResource:getAll ");
-        
+    public List<Drawing> getAll() {      
         return DataProvider.getAllDrawings();
     }
 
