@@ -21,12 +21,19 @@
        <junit.version>4.11</junit.version>
        <maven.surefire.plugin.version>2.13</maven.surefire.plugin.version>
        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+       <!--
        <adminserver.listen>localhost</adminserver.listen>
        <adminserver.port>7001</adminserver.port>
-       <adminserver.user>weblogic</adminserver.user>
-       <adminserver.user.pwd>welcome1</adminserver.user.pwd>
        <deploytarget1>apptier-cluster0</deploytarget1>
        <deploytarget2>datatier-cluster0</deploytarget2>
+       -->
+       <adminserver.listen>bmw-i1</adminserver.listen>
+       <adminserver.port>7003</adminserver.port>
+       <deploytarget1>JCSwithC_cluster</deploytarget1>
+       <deploytarget2>JCSwithC_DGCluster</deploytarget2>
+       <adminserver.user>weblogic</adminserver.user>
+       <adminserver.user.pwd>welcome1</adminserver.user.pwd>
+       <adminserver.protocol>http</adminserver.protocol>
        
    </properties> 
 </project>

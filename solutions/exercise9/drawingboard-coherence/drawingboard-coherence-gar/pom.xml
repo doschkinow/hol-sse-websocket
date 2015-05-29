@@ -103,10 +103,13 @@
                             <goal>deploy</goal>
                         </goals>
                         <configuration>
-                            <adminurl>t3://${adminserver.listen}:${adminserver.port}</adminurl>
+                            <adminurl>${adminserver.protocol}://${adminserver.listen}:${adminserver.port}</adminurl>
                             <user>${adminserver.user}</user>
                             <password>${adminserver.user.pwd}</password>
                             <verbose>true</verbose>
+                            <debug>true</debug>
+                            <remote>true</remote>
+                            <upload>true</upload>
                             <source>${project.build.directory}/${project.build.finalName}.${project.packaging}</source>
                             <targets>${deploytarget2}</targets>
                             <name>${project.build.finalName}</name>
