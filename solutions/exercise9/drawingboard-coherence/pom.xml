@@ -26,13 +26,30 @@
        <adminserver.port>7001</adminserver.port>
        <deploytarget1>apptier-cluster0</deploytarget1>
        <deploytarget2>datatier-cluster0</deploytarget2>
-       -->
-       <adminserver.listen>bmw-i1</adminserver.listen>
+       <adminserver.user>weblogic</adminserver.user>
+       <adminserver.user.pwd>welcome1</adminserver.user.pwd>
+       
+       <adminserver.listen>w-i1</adminserver.listen>
        <adminserver.port>7003</adminserver.port>
        <deploytarget1>JCSwithC_cluster</deploytarget1>
        <deploytarget2>JCSwithC_DGCluster</deploytarget2>
        <adminserver.user>weblogic</adminserver.user>
        <adminserver.user.pwd>welcome1</adminserver.user.pwd>
+       
+       <adminserver.listen>m-i1</adminserver.listen>
+       <adminserver.port>7003</adminserver.port>
+       <deploytarget1>Coherenc_cluster</deploytarget1>
+       <deploytarget2>Coherenc_DGCluster</deploytarget2>
+       <adminserver.user>weblogic</adminserver.user>
+       <adminserver.user.pwd>Welcome1#</adminserver.user.pwd>
+       -->
+       <adminserver.listen>j-i1</adminserver.listen>
+       <adminserver.port>7003</adminserver.port>
+       <deploytarget1>jcs_cluster</deploytarget1>
+       <deploytarget2>jcs_DGCluster</deploytarget2>
+       <adminserver.user>weblogic</adminserver.user>
+       <adminserver.user.pwd>Welcome1#</adminserver.user.pwd>
+       
        <adminserver.protocol>http</adminserver.protocol>
        
    </properties> 
